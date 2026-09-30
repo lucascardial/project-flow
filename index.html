@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fluxo de projeto · Ganucci</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#CDD3CF; --paper:#E4E8E5; --ink:#000; --muted:#57605A; --line:#A9B2AC;
+  --blue:#3E67A6; --blue-ink:#fff; --done:#2F7A4F; --warn:#A5541B;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#141715; --paper:#1D211E; --ink:#EDF0EE; --muted:#9AA39D; --line:#353B37;
+  --blue:#7FA3DB; --blue-ink:#0d1420; --done:#6CC393; --warn:#E3A069;
+}}
+:root[data-theme="dark"]{
+  --bg:#141715; --paper:#1D211E; --ink:#EDF0EE; --muted:#9AA39D; --line:#353B37;
+  --blue:#7FA3DB; --blue-ink:#0d1420; --done:#6CC393; --warn:#E3A069;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Urbanist",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+.shell{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+aside{border-right:1px solid var(--line);padding:28px 20px;display:flex;flex-direction:column;gap:18px}
+.brand{font-weight:300;font-size:22px;letter-spacing:.18em}
+.brand small{display:block;font-size:13px;letter-spacing:0;color:var(--muted);font-weight:400;margin-top:2px}
+.clients{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}
+.clients button{width:100%;text-align:left;background:none;border:0;padding:10px 12px;border-radius:6px;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.clients button:hover{background:var(--paper)}
+.clients button[aria-current="true"]{background:var(--ink);color:var(--bg)}
+.clients .pct{font-size:13px;opacity:.7;font-variant-numeric:tabular-nums}
+.newclient{display:flex;gap:6px}
+.newclient input{flex:1;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:9px 10px}
+.btn{background:var(--ink);color:var(--bg);border:0;border-radius:6px;padding:9px 14px;font-weight:600}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+.sync{font-size:12px;color:var(--muted);margin-top:auto}
+
+main{padding:36px clamp(18px,4vw,56px) 80px;max-width:980px}
+.empty{padding:80px 0;color:var(--muted);font-size:18px;max-width:40ch}
+.head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px;align-items:flex-end;margin-bottom:26px}
+.head h1{font-size:clamp(34px,5vw,54px);font-weight:300;margin:0;line-height:1;letter-spacing:-.01em}
+.head h1 input{background:none;border:0;border-bottom:1px dashed transparent;width:100%;font-weight:300;padding:0}
+.head h1 input:hover,.head h1 input:focus{border-bottom-color:var(--line)}
+.bigpct{font-size:clamp(46px,7vw,84px);font-weight:200;line-height:.9;font-variant-numeric:tabular-nums}
+.bigpct span{font-size:.4em;color:var(--muted)}
+
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;background:var(--paper);border-radius:10px;padding:16px 18px;margin-bottom:12px}
+.meta label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.meta select,.meta input{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px;color:var(--ink);font-size:15px}
+.notice{font-size:14px;margin:0 0 6px;color:var(--muted)}
+.notice.warn{color:var(--warn);font-weight:600}
+.packinfo{font-size:14px;color:var(--muted);margin:0 0 26px}
+
+/* the rail: 10 stages as a single strip */
+.rail{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:0 0 30px}
+.rail a{display:block;height:34px;border-radius:4px;background:var(--paper);position:relative;overflow:hidden;text-decoration:none}
+.rail a i{position:absolute;inset:0 auto 0 0;background:var(--blue);transition:width .3s}
+.rail a.full i{background:var(--done)}
+.rail a b{position:relative;font-size:12px;font-weight:600;color:var(--ink);padding:9px 0 0 8px;display:block;mix-blend-mode:normal}
+@media (prefers-reduced-motion:reduce){.rail a i{transition:none}}
+
+.phase{border-top:1px solid var(--line);padding:22px 0 8px}
+.phase header{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:baseline;cursor:pointer;background:none;border:0;width:100%;text-align:left;padding:0}
+.num{background:var(--ink);color:var(--bg);font-size:17px;padding:3px 0;text-align:center;border-radius:3px;font-variant-numeric:tabular-nums}
+.phase.complete .num{background:var(--done)}
+.phase h2{margin:0;font-size:24px;font-weight:500}
+.phase .sub{display:block;font-size:14px;color:var(--muted);font-weight:400;margin-top:2px}
+.count{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.items{list-style:none;margin:14px 0 10px 64px;padding:0;display:flex;flex-direction:column;gap:2px}
+.phase.closed .items{display:none}
+.items li label{display:grid;grid-template-columns:22px 1fr;gap:12px;padding:7px 8px;border-radius:6px;cursor:pointer;align-items:start}
+.items li label:hover{background:var(--paper)}
+.items input{appearance:none;width:20px;height:20px;border:1.5px solid var(--muted);border-radius:4px;margin:1px 0 0;display:grid;place-content:center;cursor:pointer}
+.items input:checked{background:var(--done);border-color:var(--done)}
+.items input:checked::after{content:"";width:10px;height:6px;border:2px solid #fff;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.items input:checked + span{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.items .hint{display:block;font-size:13px;color:var(--muted);text-decoration:none}
+.tag{font-size:11px;font-weight:600;border:1px solid var(--blue);color:var(--blue);border-radius:99px;padding:1px 7px;margin-left:6px;white-space:nowrap;vertical-align:2px}
+.notes{margin-top:30px;border-top:1px solid var(--line);padding-top:22px}
+.notes h2{font-size:20px;font-weight:500;margin:0 0 10px}
+.notes textarea{width:100%;min-height:120px;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px;resize:vertical}
+.foot{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+
+.mobilebar{display:none}
+@media (max-width:760px){
+  .shell{grid-template-columns:1fr}
+  aside{border-right:0;border-bottom:1px solid var(--line);padding:18px}
+  .clients{flex-direction:row;overflow-x:auto;gap:6px}
+  .clients button{white-space:nowrap;border:1px solid var(--line)}
+  .items{margin-left:0}
+  .phase header{grid-template-columns:42px 1fr auto}
+  .rail b{display:none!important}
+  .sync{margin-top:0}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <div class="brand">GANUCCI<small>Fluxo de projeto · identidade visual</small></div>
+    <ul class="clients" id="clients"></ul>
+    <form class="newclient" id="newForm" onsubmit="return false">
+      <input id="newName" placeholder="Nome do cliente" aria-label="Nome do novo cliente">
+      <button class="btn" id="addBtn" type="button">Criar</button>
+    </form>
+    <div class="sync" id="sync">Carregando…</div>
+  </aside>
+  <main id="main"></main>
+</div>
+
+<script>
+const PACKS = {
+  ingame:  {name:"Pack In Game", price:"R$ 2.200", pay:"50% de entrada ou R$ 1.850 à vista"},
+  standard:{name:"Standard Pack", price:"R$ 3.200", pay:"2x com 50% de entrada ou R$ 2.800 à vista"},
+  topo:    {name:"Pack No Topo", price:"R$ 4.600", pay:"condição de pagamento a combinar"}
+};
+const PACKTAG = {standard:"Standard+", topo:"No Topo"};
+
+// item: [id, text, hint?, packs?]  packs = list of packs where the item applies
+const PHASES = [
+ {id:"com", title:"Comercial", sub:"Antes do sim",
+  items:[
+   ["c1","Pré-briefing com o cliente","Entender a necessidade e já definir quais itens adicionais entram"],
+   ["c2","Enviar a proposta","Anote a data no campo acima: a validade é de 5 dias"],
+   ["c3","Follow-up antes da proposta vencer"],
+   ["c4","Proposta aprovada e pack definido"],
+   ["c5","Coletar dados para o contrato","Nome completo, CPF ou CNPJ, endereço, CEP, cidade/estado"]
+  ]},
+ {id:"onb", title:"Onboarding", sub:"Receber bem o cliente",
+  items:[
+   ["o1","Mensagem de boas-vindas no WhatsApp e no e-mail"],
+   ["o2","Criar a pasta do projeto","Briefing, referências, versões, arquivos finais"],
+   ["o3","Explicar o cronograma de 5 semanas","E que atrasos no envio de informações empurram o prazo"],
+   ["o4","Explicar a regra de alterações","Até 3 alterações de baixo impacto sem custo"],
+   ["o5","Agendar a reunião de briefing"]
+  ]},
+ {id:"ctr", title:"Contrato", sub:"Formalizar e reservar a data",
+  items:[
+   ["k1","Redigir o contrato","Escopo do pack, 25 dias úteis, 3 alterações, taxa de cancelamento, nota fiscal"],
+   ["k2","Enviar para assinatura"],
+   ["k3","Contrato assinado pelas duas partes"],
+   ["k4","Receber a entrada de 50% (ou o valor à vista)"],
+   ["k5","Emitir nota fiscal, se o cliente pedir"],
+   ["k6","Definir a data de início da semana 1","Preencha no campo acima para calcular as semanas"]
+  ]},
+ {id:"brf", title:"Briefing", sub:"Imersão", week:1,
+  items:[
+   ["b1","Coleta de informações"],
+   ["b2","Reunião de briefing"],
+   ["b3","Estudo do briefing"],
+   ["b4","Pesquisa da história da marca"],
+   ["b5","Alinhamento do projeto"],
+   ["b6","Entendimento da finalidade"]
+  ]},
+ {id:"est", title:"Estratégia", sub:"Base conceitual da marca", week:2,
+  items:[
+   ["e1","Atributos da marca"],["e2","Simetria"],["e3","Palavras-chave"],
+   ["e4","Personalidade e DNA"],["e5","Missão, visão e valores"],
+   ["e6","Análise de concorrentes"],["e7","Público-alvo"],["e8","Pontos de contato"],
+   ["e9","Mapa mental"],["e10","Validar a estratégia com o cliente"]
+  ]},
+ {id:"mood", title:"Moodboard", sub:"Ideação", week:3,
+  items:[
+   ["m1","Coleta de referências"],
+   ["m2","Montar o moodboard"],
+   ["m3","Apresentar o moodboard ao cliente"],
+   ["m4","Validação de ideias"],
+   ["m5","Definição do estilo visual aprovada"]
+  ]},
+ {id:"imp", title:"Implementação", sub:"Criação da identidade", week:4,
+  items:[
+   ["i1","Rascunhos"],["i2","Geração de ideias"],["i3","Testes e validação"],
+   ["i4","Funcionalidade"],["i5","Aplicabilidade"],["i6","Refinar a proposta final"],
+   ["i7","Logotipo e suas variações"],["i8","Paleta de cores e especificações técnicas"],
+   ["i9","Fontes de apoio"],["i10","Elementos gráficos"],
+   ["i11","Aplicações visuais"],["i12","Estruturação da marca"],
+   ["i13","Brand book",null,["standard","topo"]],
+   ["i14","Itens adicionais","Uniforme, assinatura de e-mail, cartão de visitas",["topo"]],
+   ["i15","Motion logo","Logotipo animado para as plataformas",["topo"]],
+   ["i16","Materiais extras","Desdobramentos em vestuário, digitais, impressos",["topo"]]
+  ]},
+ {id:"apr", title:"Apresentação", sub:"Feedback e ajustes",
+  items:[
+   ["a1","Apresentação do projeto"],
+   ["a2","Colher feedback"],
+   ["a3","Alteração 1 de 3"],["a4","Alteração 2 de 3"],["a5","Alteração 3 de 3"],
+   ["a6","Aprovação final registrada por escrito"]
+  ]},
+ {id:"ent", title:"Entrega", sub:"Fechamento", week:5,
+  items:[
+   ["d1","Receber o pagamento restante"],
+   ["d2","Fechamento de arquivos"],
+   ["d3","Logotipo RGB","ai, eps, pdf, jpg, png, svg"],
+   ["d4","Logotipo CMYK","ai, eps, pdf"],
+   ["d5","Elementos de apoio","ai, eps, pdf, jpg, png, svg"],
+   ["d6","Tipografia complementar para instalação"],
+   ["d7","Materiais adicionais finalizados"],
+   ["d8","Enviar os arquivos ao cliente"],
+   ["d9","INPI: gerar as taxas e enviar para pagamento"],
+   ["d10","INPI: protocolar o pedido de registro"],
+   ["d11","Alinhamento final"]
+  ]},
+ {id:"pos", title:"Pós-projeto", sub:"Fechar o ciclo",
+  items:[
+   ["p1","Pedir depoimento"],
+   ["p2","Autorização para usar como case"],
+   ["p3","Publicar o case no portfólio"],
+   ["p4","Arquivar o projeto"],
+   ["p5","Follow-up em 30 dias","Oferecer conteúdo, audiovisual ou tráfego"]
+  ]}
+];
+
+let state = {projects:[], activeId:null};
+let db = null, docRef = null, saveTimer = null, closed = {};
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2,10);
+
+function applies(item, pack){ return !item[3] || item[3].includes(pack); }
+function phaseItems(ph, p){ return ph.items.filter(it => applies(it, p.pack)); }
+function progress(p){
+  let t=0,d=0; PHASES.forEach(ph=>phaseItems(ph,p).forEach(it=>{t++; if(p.checks[it[0]]) d++;}));
+  return t ? Math.round(d/t*100) : 0;
+}
+function addDays(iso, n){ const d=new Date(iso+"T12:00:00"); d.setDate(d.getDate()+n); return d; }
+function fmt(d){ return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"short"}); }
+function weekRange(p, w){
+  if(!p.startDate) return "";
+  // semanas úteis: segunda a sexta a partir da data de início
+  const s = addDays(p.startDate, (w-1)*7), e = addDays(p.startDate, (w-1)*7+4);
+  return fmt(s)+" a "+fmt(e);
+}
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function renderClients(){
+  const ul = $("#clients");
+  ul.innerHTML = state.projects.map(p =>
+    `<li><button data-id="${p.id}" aria-current="${p.id===state.activeId}"><span>${esc(p.name)}</span><span class="pct">${progress(p)}%</span></button></li>`
+  ).join("");
+  ul.querySelectorAll("button").forEach(b => b.onclick = () => { state.activeId=b.dataset.id; save(); render(); });
+}
+
+function render(){
+  renderClients();
+  const p = state.projects.find(x=>x.id===state.activeId);
+  const main = $("#main");
+  if(!p){
+    main.innerHTML = `<p class="empty">Crie um cliente na lateral para abrir o fluxo dele, do pré-briefing ao pós-projeto.</p>`;
+    return;
+  }
+  const pk = PACKS[p.pack];
+  let validity = "";
+  if(p.proposalDate && !p.checks.c4){
+    const end = addDays(p.proposalDate,5), days = Math.ceil((end - new Date())/86400000);
+    validity = days >= 0
+      ? `<p class="notice ${days<=1?'warn':''}">Proposta válida até ${fmt(end)} (${days===0?'vence hoje':days===1?'falta 1 dia':'faltam '+days+' dias'}).</p>`
+      : `<p class="notice warn">A proposta venceu em ${fmt(end)}. Revise valores e prazos antes de fechar.</p>`;
+  }
+  let deliver = "";
+  if(p.startDate){
+    const end = addDays(p.startDate, 4*7+4);
+    deliver = `<p class="notice">Entrega prevista: ${fmt(end)} (25 dias úteis).</p>`;
+  }
+
+  const rail = PHASES.map((ph,i)=>{
+    const its = phaseItems(ph,p), d = its.filter(it=>p.checks[it[0]]).length, pct = its.length? d/its.length*100:0;
+    return `<a href="#ph-${ph.id}" class="${pct===100?'full':''}" title="${ph.title}: ${d}/${its.length}"><i style="width:${pct}%"></i><b>${String(i).padStart(2,"0")}</b></a>`;
+  }).join("");
+
+  const phases = PHASES.map((ph,i)=>{
+    const its = phaseItems(ph,p), d = its.filter(it=>p.checks[it[0]]).length;
+    const wk = ph.week ? ` · Semana ${ph.week}${p.startDate?' ('+weekRange(p,ph.week)+')':''}` : "";
+    const done = d===its.length;
+    const isClosed = closed[ph.id] ?? false;
+    return `<section class="phase ${done?'complete':''} ${isClosed?'closed':''}" id="ph-${ph.id}">
+      <header role="button" tabindex="0" aria-expanded="${!isClosed}" data-toggle="${ph.id}">
+        <span class="num">${String(i).padStart(2,"0")}</span>
+        <h2>${ph.title}<span class="sub">${ph.sub}${wk}</span></h2>
+        <span class="count">${d}/${its.length}</span>
+      </header>
+      <ul class="items">${its.map(it=>`
+        <li><label><input type="checkbox" data-item="${it[0]}" ${p.checks[it[0]]?"checked":""}>
+        <span>${esc(it[1])}${it[3]?`<span class="tag">${PACKTAG[it[3][0]]}</span>`:""}${it[2]?`<span class="hint">${esc(it[2])}</span>`:""}</span></label></li>`).join("")}
+      </ul></section>`;
+  }).join("");
+
+  main.innerHTML = `
+    <div class="head">
+      <h1><input id="pname" value="${esc(p.name)}" aria-label="Nome do cliente"></h1>
+      <div class="bigpct">${progress(p)}<span>%</span></div>
+    </div>
+    <div class="meta">
+      <label>Pack contratado
+        <select id="ppack">${Object.entries(PACKS).map(([k,v])=>`<option value="${k}" ${k===p.pack?"selected":""}>${v.name} · ${v.price}</option>`).join("")}</select></label>
+      <label>Proposta enviada em<input type="date" id="pprop" value="${p.proposalDate||""}"></label>
+      <label>Início da semana 1<input type="date" id="pstart" value="${p.startDate||""}"></label>
+    </div>
+    ${validity}${deliver}
+    <p class="packinfo">${pk.name}: ${pk.price}, ${pk.pay}.</p>
+    <nav class="rail" aria-label="Progresso por etapa">${rail}</nav>
+    ${phases}
+    <div class="notes"><h2>Anotações do projeto</h2>
+      <textarea id="pnotes" placeholder="Decisões de reunião, pedidos de alteração, contatos…">${esc(p.notes||"")}</textarea></div>
+    <div class="foot">
+      <button class="btn ghost" id="collapseAll">Recolher etapas concluídas</button>
+      <button class="btn ghost" id="delBtn">Excluir cliente</button>
+    </div>`;
+
+  main.querySelectorAll("[data-item]").forEach(cb => cb.onchange = () => {
+    p.checks[cb.dataset.item] = cb.checked; if(!cb.checked) delete p.checks[cb.dataset.item];
+    save(); render();
+  });
+  main.querySelectorAll("[data-toggle]").forEach(h => {
+    const t = () => { closed[h.dataset.toggle] = !(closed[h.dataset.toggle] ?? false); render(); };
+    h.onclick = t; h.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); t(); } };
+  });
+  $("#pname").onchange = e => { p.name = e.target.value.trim() || p.name; save(); renderClients(); };
+  $("#ppack").onchange = e => { p.pack = e.target.value; save(); render(); };
+  $("#pprop").onchange = e => { p.proposalDate = e.target.value; save(); render(); };
+  $("#pstart").onchange = e => { p.startDate = e.target.value; save(); render(); };
+  $("#pnotes").oninput = e => { p.notes = e.target.value; save(); };
+  $("#collapseAll").onclick = () => {
+    PHASES.forEach(ph=>{ const its=phaseItems(ph,p); closed[ph.id] = its.every(it=>p.checks[it[0]]); }); render();
+  };
+  $("#delBtn").onclick = () => {
+    if(!confirm(`Excluir ${p.name} e todo o progresso dele?`)) return;
+    state.projects = state.projects.filter(x=>x.id!==p.id);
+    state.activeId = state.projects[0]?.id || null; save(); render();
+  };
+}
+
+function addClient(){
+  const name = $("#newName").value.trim(); if(!name) { $("#newName").focus(); return; }
+  const p = {id:uid(), name, pack:"standard", checks:{}, notes:"", proposalDate:"", startDate:"", createdAt:Date.now()};
+  state.projects.unshift(p); state.activeId = p.id; $("#newName").value = ""; closed = {};
+  save(); render();
+}
+$("#addBtn").onclick = addClient;
+$("#newName").onkeydown = e => { if(e.key==="Enter"){ e.preventDefault(); addClient(); } };
+
+function setSync(t){ $("#sync").textContent = t; }
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try{ localStorage.setItem("ganucci-fluxo", JSON.stringify(state)); }catch(e){}
+    if(docRef){
+      try{ await docRef.set({json: JSON.stringify(state), updatedAt: Date.now()}); setSync("Salvo na sua conta"); }
+      catch(e){ setSync("Não foi possível salvar na conta. Salvo só neste navegador."); }
+    } else setSync("Salvo neste navegador");
+  }, 600);
+}
+
+// load: local first (instant), then account storage if available
+try{ const raw = localStorage.getItem("ganucci-fluxo"); if(raw) state = JSON.parse(raw); }catch(e){}
+render();
+setSync("Salvo neste navegador");
+
+(async () => {
+  try{
+    if(!window.claude || !window.claude.use) return;
+    const [d, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+    if(!d || !user) return;
+    const id = await user.id(); if(!id) return;
+    db = d; docRef = db.doc("data/users/"+id+"/workspace");
+    const snap = await docRef.get();
+    if(snap.exists){
+      const remote = JSON.parse(snap.data().json || "{}");
+      if(remote.projects){ state = remote; render(); }
+    } else if(state.projects.length){ save(); }
+    setSync("Salvo na sua conta");
+  }catch(e){ /* stays on browser storage */ }
+})();
+</script>
+</body>
+</html>
